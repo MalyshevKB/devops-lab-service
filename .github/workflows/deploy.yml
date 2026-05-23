@@ -1,0 +1,35 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ master, main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t devops-lab-service .
+
+      - name: Test container
+        run: |
+          docker run -d -p 8000:8000 --name test-container devops-lab-service
+          sleep 5
+          curl -f http://localhost:8000/ || exit 1
+          docker stop test-container
+          docker rm test-container
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /root/devops-lab-service
+            git pull origin master
+            docker-compose up -d --build
