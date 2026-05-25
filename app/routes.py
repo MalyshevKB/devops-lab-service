@@ -10,7 +10,7 @@ task_id = 0
 
 @router.get("/")
 def root():
-    return {"message": "Service is running"}
+    return {"message": "Service is running - CI/CD TEST"}
 
 
 @router.post("/tasks")
@@ -41,3 +41,4 @@ def process_task(task_id: int):
             return {"task_id": task_id, "time": delay}
 
     return {"error": "task not found"}
+
